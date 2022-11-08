@@ -4,7 +4,7 @@ const axios = require('axios')
 
 //user sign in
 exports.register = async (req, res, next) => {
-    const { username, password, email, contact } = req.body
+    const { firstname, lastname, password, email } = req.body
 
     //validate password length
     if (password && password.length < 6) {
@@ -20,14 +20,14 @@ exports.register = async (req, res, next) => {
 
     //create user in db
     await User.create({
-        username,
+        firstname,
+        lastname,
         password,
         email: email.toLowerCase(), //sanitize email
-        contact
     }).then((user) => {
         //creating token
         const token = jwt.sign(
-            { id: user._id, username, email: user.email },
+            { id: user._id, email: user.email },
             process.env.JWT_SECRET,
             {
                 expiresIn: '1h'
@@ -54,7 +54,7 @@ exports.login = async (req, res, next) => {
     //check if username or password is empty
     if (!(email && password)) {
         return res.status(400).json({
-            message: "Username and Password required",
+            message: "Email and Password required",
         })
     }
     try {
@@ -70,16 +70,16 @@ exports.login = async (req, res, next) => {
         }
 
         //checking password
-        if(password != user.password){
+        if (password != user.password) {
             return res.status(400).json({
                 message: "Login failed",
                 error: "Incorrect password",
             })
         }
-        
+
         //create token 
         const token = jwt.sign(
-            { id: user._id, username: user.username, email: user.email },
+            { id: user._id, email: user.email },
             process.env.JWT_SECRET,
             {
                 expiresIn: '1h'
